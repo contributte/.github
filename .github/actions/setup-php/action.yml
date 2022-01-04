@@ -1,0 +1,54 @@
+name: "PHP"
+description: "Setup PHP"
+
+inputs:
+  php:
+    required: false
+    type: string
+    default: "8.1"
+
+  extensions:
+    required: false
+    type: string
+    default: "json"
+
+  tools:
+    required: false
+    type: string
+    default: "composer:v2"
+
+  ini:
+    required: false
+    type: string
+    default: "zend.assertions=1, assert.exception=1"
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: "Setup PHP cache environment"
+      id: "extcache"
+      uses: "shivammathur/cache-extensions@v1"
+      with:
+        php-version: "${{ inputs.php }}"
+        extensions: "${{ inputs.extensions }}"
+        key: "v1"
+
+    - name: "Cache PHP extensions"
+      uses: "actions/cache@v2"
+      with:
+        path: "${{ steps.extcache.outputs.dir }}"
+        key: "${{ steps.extcache.outputs.key }}"
+        restore-keys: "${{ steps.extcache.outputs.key }}"
+
+    - name: "Install PHP"
+      uses: "shivammathur/setup-php@v2"
+      with:
+        php-version: "${{ inputs.php }}"
+        extensions: "${{ inputs.extensions }}"
+        tools: "${{ inputs.tools }}"
+        ini-values: "${{ inputs.ini }}"
+
+    - name: "Setup problem matchers for PHP"
+      shell: "bash"
+      run: 'echo "::add-matcher::${{ runner.tool_cache }}/php.json"'

@@ -23,10 +23,29 @@ on:
         type: boolean
         default: false
 
+      mysql:
+        required: false
+        type: string
+        default: "5.7"
+
+      database:
+        required: false
+        type: string
+        default: "tests"
+
 jobs:
   tests:
-    name: "Nette Tester (${{ inputs.php }})"
+    name: "Nette Tester ${{ inputs.php }} / MySQL ${{ inputs.mariadb }}"
     runs-on: "ubuntu-latest"
+
+    services:
+      mysql:
+        image: "mysql:${{ inputs.mysql }}"
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true
+          MYSQL_DATABASE: "${{ inputs.database }}"
+        ports:
+          - 3306:3306
 
     steps:
       - name: "Checkout"
