@@ -30,7 +30,7 @@ jobs:
       - name: "PHP"
         uses: "contributte/.github/.github/actions/setup-php@v1"
         with:
-          version: "${{ inputs.php }}"
+          php: "${{ inputs.php }}"
 
       - name: "Composer"
         uses: "contributte/.github/.github/actions/setup-composer@v1"
