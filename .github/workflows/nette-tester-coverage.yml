@@ -6,7 +6,7 @@ on:
       makefile:
         required: false
         type: string
-        default: "tests"
+        default: "coverage"
 
       php:
         required: false
@@ -39,3 +39,12 @@ jobs:
 
       - name: "Run Nette Tester"
         run: "make ${{ inputs.makefile }}"
+
+      - name: "Coveralls.io"
+        env:
+          CI_NAME: github
+          CI: true
+          COVERALLS_REPO_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          wget https://github.com/php-coveralls/php-coveralls/releases/download/v2.5.1/php-coveralls.phar
+          php php-coveralls.phar --verbose --config tests/.coveralls.yml
