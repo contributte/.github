@@ -1,0 +1,73 @@
+name: Nette Tester
+
+on:
+  workflow_call:
+    inputs:
+      makefile:
+        required: false
+        type: string
+        default: "tests"
+      php:
+        required: false
+        type: string
+        default: "8.1"
+      composer:
+        required: false
+        type: string
+        default: "composer update --no-interaction --no-progress --prefer-dist --prefer-stable --prefer-lowest"
+
+env:
+  extensions: "json"
+  tools: "composer:v2"
+  cache-version: "1"
+
+jobs:
+  tests:
+    name: "Nette Tester (${{ inputs.php }})"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Setup PHP cache environment"
+        id: "extcache"
+        uses: "shivammathur/cache-extensions@v1"
+        with:
+          php-version: "${{ inputs.php }}"
+          extensions: "${{ env.extensions }}"
+          key: "${{ env.cache-version }}"
+
+      - name: "Cache PHP extensions"
+        uses: "actions/cache@v2"
+        with:
+          path: "${{ steps.extcache.outputs.dir }}"
+          key: "${{ steps.extcache.outputs.key }}"
+          restore-keys: "${{ steps.extcache.outputs.key }}"
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ inputs.php }}"
+          extensions: "${{ env.extensions }}"
+          tools: "${{ env.tools }}"
+
+      - name: "Setup problem matchers for PHP"
+        run: 'echo "::add-matcher::${{ runner.tool_cache }}/php.json"'
+
+      - name: "Get Composer cache directory"
+        id: "composercache"
+        run: 'echo "::set-output name=dir::$(composer config cache-files-dir)"'
+
+      - name: "Cache PHP dependencies"
+        uses: "actions/cache@v2"
+        with:
+          path: "${{ steps.composercache.outputs.dir }}"
+          key: "${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}"
+          restore-keys: "${{ runner.os }}-composer-"
+
+      - name: "Install dependencies"
+        run: "${{ inputs.composer }}"
+
+      - name: "Run Nette Tester"
+        run: "make ${{ inputs.makefile }}"
