@@ -18,6 +18,11 @@ on:
         type: string
         default: "composer update --no-interaction --no-progress --prefer-dist --prefer-stable"
 
+      coverage:
+        required: false
+        type: boolean
+        default: false
+
 jobs:
   tests:
     name: "Nette Tester (${{ inputs.php }})"
@@ -39,3 +44,13 @@ jobs:
 
       - name: "Run Nette Tester"
         run: "make ${{ inputs.makefile }}"
+
+      - name: "Coveralls.io"
+        if: ${{ inputs.coverage == true }}
+        env:
+          CI_NAME: github
+          CI: true
+          COVERALLS_REPO_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          wget https://github.com/php-coveralls/php-coveralls/releases/download/v2.5.1/php-coveralls.phar
+          php php-coveralls.phar --verbose --config tests/.coveralls.yml
