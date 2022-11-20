@@ -22,6 +22,11 @@ inputs:
     type: string
     default: "zend.assertions=1, assert.exception=1"
 
+  coverage:
+    required: false
+    type: string
+    default: "xdebug"
+
 runs:
   using: "composite"
 
@@ -48,6 +53,7 @@ runs:
         extensions: "${{ inputs.extensions }}"
         tools: "${{ inputs.tools }}"
         ini-values: "${{ inputs.ini }}"
+        coverage: "${{ inputs.coverage }}"
 
     - name: "Setup problem matchers for PHP"
       shell: "bash"
