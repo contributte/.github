@@ -1,0 +1,60 @@
+name: Phpunit
+
+on:
+  workflow_call:
+    inputs:
+      make:
+        required: false
+        type: string
+        default: "tests"
+
+      php:
+        required: false
+        type: string
+        default: "8.1"
+
+      composer:
+        required: false
+        type: string
+        default: "composer update --no-interaction --no-progress --prefer-dist --prefer-stable"
+
+      coverage:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  tests:
+    name: "Nette Tester (${{ inputs.php }})"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "PHP"
+        uses: "contributte/.github/.github/actions/setup-php@v1"
+        with:
+          php: "${{ inputs.php }}"
+
+      - name: "Composer"
+        uses: "contributte/.github/.github/actions/setup-composer@v1"
+        with:
+          command: "${{ inputs.composer }}"
+
+      - name: "Setup problem matchers for PHPUnit"
+        shell: "bash"
+        run: 'echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"'
+
+      - name: "Run Phpunit"
+        run: "make ${{ inputs.make }}"
+
+      - name: "Coveralls.io"
+        if: ${{ inputs.coverage == true }}
+        env:
+          CI_NAME: github
+          CI: true
+          COVERALLS_REPO_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          wget https://github.com/php-coveralls/php-coveralls/releases/download/v2.5.1/php-coveralls.phar
+          php php-coveralls.phar --verbose --config tests/.coveralls.yml
