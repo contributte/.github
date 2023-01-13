@@ -6,17 +6,21 @@ on:
       name:
         required: true
         type: string
+
       run:
         required: true
         type: string
+
       php:
         required: false
         type: string
         default: "8.1"
+
       php-extensions:
         required: false
         type: string
         default: "json"
+
       composer:
         required: false
         type: string
