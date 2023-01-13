@@ -3,7 +3,7 @@ name: Phpstan
 on:
   workflow_call:
     inputs:
-      makefile:
+      make:
         required: false
         type: string
         default: "phpstan"
@@ -38,4 +38,4 @@ jobs:
           command: "${{ inputs.composer }}"
 
       - name: "PHPStan"
-        run: "make ${{ inputs.makefile }}"
+        run: "make ${{ inputs.make }}"

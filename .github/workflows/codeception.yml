@@ -3,7 +3,7 @@ name: Codeception
 on:
   workflow_call:
     inputs:
-      makefile:
+      make:
         required: false
         type: string
         default: "tests"
@@ -74,7 +74,7 @@ jobs:
         run: "${{ inputs.composer }}"
 
       - name: "Run Codeception"
-        run: "make ${{ inputs.makefile }}"
+        run: "make ${{ inputs.make }}"
 
       - name: "Coveralls.io"
         if: ${{ inputs.coverage == true }}

@@ -3,7 +3,7 @@ name: Codesniffer
 on:
   workflow_call:
     inputs:
-      makefile:
+      make:
         required: false
         type: string
         default: "cs"
@@ -39,4 +39,4 @@ jobs:
           command: "${{ inputs.composer }}"
 
       - name: "Coding Standard"
-        run: "make ${{ inputs.makefile }}"
+        run: "make ${{ inputs.make }}"
