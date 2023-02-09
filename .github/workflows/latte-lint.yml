@@ -1,0 +1,41 @@
+name: Latte Lint
+
+on:
+  workflow_call:
+    inputs:
+      make:
+        required: false
+        type: string
+        default: "latte-lint"
+
+      php:
+        required: false
+        type: string
+        default: "8.1"
+
+      composer:
+        required: false
+        type: string
+        default: "composer update --no-interaction --no-progress --prefer-dist --prefer-stable"
+
+jobs:
+  phpstan:
+    name: "Latte Lint (${{ inputs.php }})"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
+
+      - name: "PHP"
+        uses: "contributte/.github/.github/actions/setup-php@v1"
+        with:
+          php: "${{ inputs.php }}"
+
+      - name: "Composer"
+        uses: "contributte/.github/.github/actions/setup-composer@v1"
+        with:
+          command: "${{ inputs.composer }}"
+
+      - name: "Latte Lint"
+        run: "make ${{ inputs.make }}"
