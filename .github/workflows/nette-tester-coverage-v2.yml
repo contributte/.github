@@ -1,0 +1,44 @@
+name: Nette Tester
+
+on:
+  workflow_call:
+    inputs:
+      make:
+        required: false
+        type: string
+        default: "coverage"
+
+      php:
+        required: false
+        type: string
+        default: "8.1"
+
+      composer:
+        required: false
+        type: string
+        default: "composer install --no-interaction --no-progress --prefer-dist --prefer-stable"
+
+jobs:
+  tests:
+    name: "Nette Tester (${{ inputs.php }})"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
+
+      - name: "PHP"
+        uses: "contributte/.github/.github/actions/setup-php@master"
+        with:
+          php: "${{ inputs.php }}"
+
+      - name: "Composer"
+        uses: "contributte/.github/.github/actions/setup-composer@master"
+        with:
+          command: "${{ inputs.composer }}"
+
+      - name: "Run Nette Tester"
+        run: "make ${{ inputs.make }}"
+
+      - name: "Covdecov"
+        uses: codecov/codecov-action@v3
