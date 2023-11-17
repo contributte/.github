@@ -16,7 +16,7 @@ on:
       composer:
         required: false
         type: string
-        default: "composer install --no-interaction --no-progress --prefer-dist --prefer-stable"
+        default: "composer install --no-interaction --no-progress --prefer-dist"
 
 jobs:
   tests:
