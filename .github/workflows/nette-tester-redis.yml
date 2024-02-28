@@ -1,0 +1,67 @@
+name: Nette Tester
+
+on:
+  workflow_call:
+    inputs:
+      make:
+        required: false
+        type: string
+        default: "tests"
+
+      php:
+        required: false
+        type: string
+        default: "8.1"
+
+      composer:
+        required: false
+        type: string
+        default: "composer install --no-interaction --no-progress --prefer-dist"
+
+      coverage:
+        required: false
+        type: boolean
+        default: false
+
+      redis:
+        required: false
+        type: string
+        default: "latest"
+
+jobs:
+  tests:
+    name: "Nette Tester ${{ inputs.php }} / Redis ${{ inputs.redis }}"
+    runs-on: "ubuntu-latest"
+
+    services:
+      redis:
+        image: "redis:${{ inputs.redis }}"
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+
+      - name: "PHP"
+        uses: "contributte/.github/.github/actions/setup-php@master"
+        with:
+          php: "${{ inputs.php }}"
+
+      - name: "Composer"
+        uses: "contributte/.github/.github/actions/setup-composer@master"
+        with:
+          command: "${{ inputs.composer }}"
+
+      - name: "Run Nette Tester"
+        run: "make ${{ inputs.make }}"
+
+      - name: "Coveralls.io"
+        if: ${{ inputs.coverage == true }}
+        env:
+          CI_NAME: github
+          CI: true
+          COVERALLS_REPO_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        run: |
+          wget https://github.com/php-coveralls/php-coveralls/releases/download/v2.5.1/php-coveralls.phar
+          php php-coveralls.phar --verbose --config tests/.coveralls.yml
