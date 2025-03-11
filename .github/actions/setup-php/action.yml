@@ -5,7 +5,7 @@ inputs:
   php:
     required: false
     type: string
-    default: "8.1"
+    default: "8.2"
 
   extensions:
     required: false
