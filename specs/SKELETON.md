@@ -2,10 +2,128 @@
 
 This document describes the standards and conventions for developing Contributte skeleton projects.
 
+## Table of Contents
+
+- [Reference Repositories](#reference-repositories)
+- [AI Development](#ai-development)
+- [Git Strategy](#git-strategy)
+- [Quality Assurance](#quality-assurance)
+- [Purpose](#purpose)
+- [Directory Structure](#directory-structure)
+- [Requirements](#requirements)
+- [Composer Configuration](#composer-configuration)
+- [Makefile](#makefile)
+- [Docker Configuration](#docker-configuration)
+- [Configuration](#configuration)
+- [PHPStan Configuration](#phpstan-configuration)
+- [Coding Standards](#coding-standards)
+- [Application Entry Point](#application-entry-point)
+- [Console Commands](#console-commands)
+- [Testing](#testing)
+- [Documentation](#documentation)
+- [Git Configuration](#git-configuration)
+- [Checklist for New Skeletons](#checklist-for-new-skeletons)
+- [Differences: Library vs Skeleton](#differences-library-vs-skeleton)
+
 ## Reference Repositories
 
 - [contributte/doctrine-skeleton](https://github.com/contributte/doctrine-skeleton)
 - [contributte/messenger-skeleton](https://github.com/contributte/messenger-skeleton)
+
+## AI Development
+
+When using AI agents (Claude, GPT, etc.) to contribute to Contributte skeleton projects:
+
+### Git Configuration
+
+```bash
+git config user.name "Felixbot"
+git config user.email "ai@f3l1x.io"
+```
+
+### Guidelines
+
+- Always commit under the `ai@f3l1x.io` email address
+- Follow all coding standards and QA requirements
+- Run all checks before committing
+- Write clear, descriptive commit messages
+
+## Git Strategy
+
+### Rebasing
+
+- **Always use rebase** instead of merge to keep history clean
+- Before starting work: `git fetch origin && git rebase origin/master`
+- Keep commits atomic and focused on single logical changes
+
+### Commit Style
+
+- Review the **last 10 commits** in the repository to match the existing style
+- Use imperative mood in commit messages (e.g., "Add feature" not "Added feature")
+- Commit logical blocks of work separately
+- Keep commits small and focused
+
+### Commit Message Format
+
+```
+Short summary (max 50 chars)
+
+Optional longer description explaining the "why" behind
+the change. Wrap at 72 characters.
+```
+
+### Examples
+
+```bash
+# Check recent commit style
+git log -10 --oneline
+
+# Rebase before pushing
+git fetch origin
+git rebase origin/master
+```
+
+## Quality Assurance
+
+**Always run these checks before committing:**
+
+### 1. Code Style (CodeSniffer)
+
+```bash
+make cs
+```
+
+Fix issues automatically:
+
+```bash
+make csf
+```
+
+### 2. Static Analysis (PHPStan)
+
+```bash
+make phpstan
+```
+
+### 3. Tests (Nette Tester)
+
+```bash
+make tests
+```
+
+### Full QA Check
+
+Run all checks at once:
+
+```bash
+make qa
+```
+
+### Requirements
+
+- All checks **must pass** before committing
+- Never commit code with failing tests or static analysis errors
+- Fix code style issues before committing (use `make csf`)
 
 ## Purpose
 
@@ -17,34 +135,17 @@ Skeleton projects serve as:
 
 ## Directory Structure
 
+Each skeleton project is different based on its purpose. The following is a high-level overview of common directories:
+
 ```
-├── .build/                   # Build artifacts
-├── .data/                    # Persistent data (databases, etc.)
-├── .docs/                    # Documentation files
-│   └── assets/               # Screenshots, diagrams
-├── .github/                  # GitHub workflows and templates
-│   └── workflows/            # CI/CD workflow files
+├── .docs/                    # Documentation and screenshots
+├── .github/                  # GitHub workflows
 ├── app/                      # Application source code
-│   ├── Domain/               # Domain logic and entities
-│   ├── Model/                # Business models
-│   ├── Presenters/           # Nette presenters
-│   ├── Router/               # Application routing
-│   └── UI/                   # UI components and templates
-├── bin/                      # Console commands and scripts
+├── bin/                      # Console scripts
 ├── config/                   # Configuration files
-│   ├── common.neon           # Common configuration
-│   ├── local.neon            # Local environment config
-│   └── local.neon.dist       # Template for local config
-├── db/                       # Database files
-│   ├── Fixtures/             # Data fixtures
-│   └── Migrations/           # Database migrations
 ├── tests/                    # Test suite
-│   └── Cases/                # Test cases
-├── var/                      # Runtime data
-│   ├── log/                  # Log files
-│   └── tmp/                  # Temporary files
+├── var/                      # Runtime data (logs, cache)
 ├── www/                      # Public web root
-│   └── index.php             # Application entry point
 ├── .editorconfig             # Editor configuration
 ├── .gitignore                # Git ignore rules
 ├── composer.json             # Composer configuration
@@ -55,6 +156,8 @@ Skeleton projects serve as:
 ├── README.md                 # Project readme
 └── ruleset.xml               # PHP CodeSniffer rules
 ```
+
+Additional directories may be present depending on the skeleton's purpose (e.g., `db/` for database migrations, `.data/` for persistent Docker data).
 
 ## Requirements
 
@@ -68,8 +171,8 @@ Skeleton projects serve as:
 
 ```json
 {
-  "name": "contributte/example-skeleton",
-  "description": "Example skeleton project description",
+  "name": "contributte/{name}-skeleton",
+  "description": "Skeleton project description",
   "license": "MIT",
   "type": "project",
   "authors": [
@@ -82,18 +185,11 @@ Skeleton projects serve as:
     "php": ">=8.2",
     "nette/application": "^3.2",
     "nette/bootstrap": "^3.2",
-    "nette/caching": "^3.3",
     "nette/di": "^3.2",
-    "nette/http": "^3.3",
-    "nette/robot-loader": "^4.0",
-    "nette/routing": "^3.1",
-    "nette/utils": "^4.0",
     "tracy/tracy": "^2.10",
-    "latte/latte": "^3.0",
-    "contributte/console": "^0.10"
+    "latte/latte": "^3.0"
   },
   "require-dev": {
-    "contributte/dev": "^0.5",
     "contributte/qa": "^0.4",
     "contributte/phpstan": "^0.1",
     "nette/tester": "^2.5",
@@ -223,9 +319,9 @@ deploy: clean project build clean
 
 ### docker-compose.yml
 
-Skeleton projects typically include Docker setup for required services:
+Skeleton projects typically include Docker setup for required services. Examples:
 
-#### Doctrine Skeleton (Database focused)
+#### Database Services
 
 ```yaml
 services:
@@ -255,30 +351,10 @@ services:
       - ./.data/mariadb/data/:/var/lib/mysql/
 ```
 
-#### Messenger Skeleton (Queue focused)
+#### Queue/Cache Services
 
 ```yaml
 services:
-  web:
-    image: php:8.1
-    volumes:
-      - .:/srv
-    ports:
-      - "8080:8080"
-    depends_on:
-      - database
-      - redis
-    environment:
-      - NETTE_DEBUG=1
-
-  database:
-    image: postgres:15
-    environment:
-      POSTGRES_PASSWORD: contributte
-      POSTGRES_DB: contributte
-    ports:
-      - "5432:5432"
-
   redis:
     image: redis:7
     command: redis-server --requirepass contributte
@@ -289,12 +365,9 @@ services:
     image: adminer
     ports:
       - "8081:8080"
-    depends_on:
-      - database
-      - redis
 ```
 
-### Docker Patterns
+### Default Credentials
 
 | Service | Default Credentials |
 |---------|---------------------|
@@ -303,29 +376,6 @@ services:
 | Redis | password: `contributte` |
 
 ## Configuration
-
-### config/common.neon
-
-Base configuration shared across all environments:
-
-```neon
-parameters:
-
-application:
-    errorPresenter: Error
-    mapping:
-        *: App\UI\*\*Presenter
-
-session:
-    autoStart: true
-
-di:
-    export:
-        tags: false
-
-extensions:
-    console: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
-```
 
 ### config/local.neon.dist
 
@@ -421,8 +471,6 @@ final class Bootstrap
 
         $configurator->setDebugMode(true);
         $configurator->enableTracy($appDir . '/var/log');
-
-        $configurator->setTimeZone('Europe/Prague');
         $configurator->setTempDirectory($appDir . '/var/tmp');
 
         $configurator->createRobotLoader()
@@ -451,6 +499,30 @@ exit(App\Bootstrap::boot()
     ->createContainer()
     ->getByType(Contributte\Console\Application::class)
     ->run());
+```
+
+## Testing
+
+### tests/bootstrap.php
+
+```php
+<?php declare(strict_types = 1);
+
+require __DIR__ . '/../vendor/autoload.php';
+
+Tester\Environment::setup();
+```
+
+### Test Organization
+
+```
+tests/
+├── Cases/
+│   ├── E2E/              # End-to-end tests
+│   ├── Integration/      # Integration tests
+│   └── Unit/             # Unit tests
+├── Fixtures/             # Test data and fixtures
+└── bootstrap.php         # Test bootstrap
 ```
 
 ## Documentation
@@ -533,33 +605,6 @@ coverage.xml
 .idea/
 .vscode/
 *.swp
-```
-
-## Testing
-
-### tests/bootstrap.php
-
-```php
-<?php declare(strict_types = 1);
-
-require __DIR__ . '/../vendor/autoload.php';
-
-Tester\Environment::setup();
-
-date_default_timezone_set('Europe/Prague');
-```
-
-### Test Organization
-
-```
-tests/
-├── Cases/
-│   ├── E2E/              # End-to-end tests
-│   ├── Integration/      # Integration tests
-│   └── Unit/             # Unit tests
-├── Fixtures/             # Test data and fixtures
-├── bootstrap.php         # Test bootstrap
-└── .coveralls.yml        # Coverage config (optional)
 ```
 
 ## Checklist for New Skeletons

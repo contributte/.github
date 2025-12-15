@@ -2,21 +2,140 @@
 
 This document describes the standards and conventions for developing Contributte libraries.
 
+## Table of Contents
+
+- [Reference Repositories](#reference-repositories)
+- [AI Development](#ai-development)
+- [Git Strategy](#git-strategy)
+- [Quality Assurance](#quality-assurance)
+- [Directory Structure](#directory-structure)
+- [Requirements](#requirements)
+- [Composer Configuration](#composer-configuration)
+- [Makefile](#makefile)
+- [PHPStan Configuration](#phpstan-configuration)
+- [Coding Standards](#coding-standards)
+- [GitHub Workflows](#github-workflows)
+- [Testing](#testing)
+- [Editor Configuration](#editor-configuration)
+- [Git Configuration](#git-configuration)
+- [Documentation](#documentation)
+- [Versioning](#versioning)
+- [Checklist for New Libraries](#checklist-for-new-libraries)
+
 ## Reference Repositories
 
 - [contributte/doctrine-dbal](https://github.com/contributte/doctrine-dbal)
 - [contributte/doctrine-orm](https://github.com/contributte/doctrine-orm)
 - [contributte/messenger](https://github.com/contributte/messenger)
+- [contributte/nella](https://github.com/contributte/nella) - reference for `.gitignore` structure
+
+## AI Development
+
+When using AI agents (Claude, GPT, etc.) to contribute to Contributte libraries:
+
+### Git Configuration
+
+```bash
+git config user.name "Felixbot"
+git config user.email "ai@f3l1x.io"
+```
+
+### Guidelines
+
+- Always commit under the `ai@f3l1x.io` email address
+- Follow all coding standards and QA requirements
+- Run all checks before committing
+- Write clear, descriptive commit messages
+
+## Git Strategy
+
+### Rebasing
+
+- **Always use rebase** instead of merge to keep history clean
+- Before starting work: `git fetch origin && git rebase origin/master`
+- Keep commits atomic and focused on single logical changes
+
+### Commit Style
+
+- Review the **last 10 commits** in the repository to match the existing style
+- Use imperative mood in commit messages (e.g., "Add feature" not "Added feature")
+- Commit logical blocks of work separately
+- Keep commits small and focused
+
+### Commit Message Format
+
+```
+Short summary (max 50 chars)
+
+Optional longer description explaining the "why" behind
+the change. Wrap at 72 characters.
+```
+
+### Examples
+
+```bash
+# Check recent commit style
+git log -10 --oneline
+
+# Rebase before pushing
+git fetch origin
+git rebase origin/master
+```
+
+## Quality Assurance
+
+**Always run these checks before committing:**
+
+### 1. Code Style (CodeSniffer)
+
+```bash
+make cs
+```
+
+Fix issues automatically:
+
+```bash
+make csf
+```
+
+### 2. Static Analysis (PHPStan)
+
+```bash
+make phpstan
+```
+
+### 3. Tests (Nette Tester)
+
+```bash
+make tests
+```
+
+### Full QA Check
+
+Run all checks at once:
+
+```bash
+make qa
+```
+
+### Requirements
+
+- All checks **must pass** before committing
+- Never commit code with failing tests or static analysis errors
+- Fix code style issues before committing (use `make csf`)
 
 ## Directory Structure
 
 ```
 ├── .docs/                    # Documentation files
+│   └── README.md             # Main documentation
 ├── .github/                  # GitHub workflows and templates
 │   └── workflows/            # CI/CD workflow files
 ├── src/                      # Source code
 ├── tests/                    # Test suite
-│   └── Cases/                # Test cases
+│   ├── Cases/                # Test cases
+│   ├── Fixtures/             # Test fixtures and data
+│   └── bootstrap.php         # Test bootstrap file
 ├── .editorconfig             # Editor configuration
 ├── .gitattributes            # Git export attributes
 ├── .gitignore                # Git ignore rules
@@ -40,11 +159,11 @@ This document describes the standards and conventions for developing Contributte
 
 ```json
 {
-  "name": "nettrine/example",
+  "name": "{vendor}/{package}",
   "description": "Package description",
   "license": "MIT",
   "type": "library",
-  "homepage": "https://github.com/contributte/example",
+  "homepage": "https://github.com/contributte/{package}",
   "authors": [
     {
       "name": "Milan Felix Sulc",
@@ -58,12 +177,11 @@ This document describes the standards and conventions for developing Contributte
     "contributte/qa": "^0.4",
     "contributte/phpstan": "^0.1",
     "mockery/mockery": "^1.6",
-    "nette/tester": "^2.5",
-    "tracy/tracy": "^2.10"
+    "nette/tester": "^2.5"
   },
   "autoload": {
     "psr-4": {
-      "Nettrine\\Example\\": "src"
+      "{Org}\\{Library}\\": "src"
     }
   },
   "autoload-dev": {
@@ -87,15 +205,14 @@ This document describes the standards and conventions for developing Contributte
 }
 ```
 
-### Key Dependencies
+### Development Dependencies
 
-| Package | Purpose |
-|---------|---------|
-| `contributte/qa` | Coding standards ruleset |
-| `contributte/phpstan` | PHPStan configuration |
-| `nette/tester` | Testing framework |
-| `mockery/mockery` | Mocking library |
-| `tracy/tracy` | Debugging tools |
+| Package | Purpose | When to Use |
+|---------|---------|-------------|
+| `contributte/qa` | Coding standards ruleset | Always required for code style checks |
+| `contributte/phpstan` | PHPStan configuration | Always required for static analysis |
+| `nette/tester` | Testing framework | Always required for running tests |
+| `mockery/mockery` | Mocking library | When tests need to mock dependencies |
 
 ## Makefile
 
@@ -188,7 +305,7 @@ parameters:
     <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
         <properties>
             <property name="rootNamespaces" type="array">
-                <element key="src" value="Nettrine\Example"/>
+                <element key="src" value="{Org}\{Library}"/>
                 <element key="tests" value="Tests"/>
             </property>
         </properties>
@@ -204,6 +321,7 @@ parameters:
 - Requires PHP 8.2 compatible ruleset
 - Enforces file/class name matching
 - Excludes temporary test directories
+- Replace `{Org}\{Library}` with actual namespace (e.g., `Nettrine\DBAL`, `Contributte\Messenger`)
 
 ## GitHub Workflows
 
@@ -223,6 +341,8 @@ Libraries use reusable workflows from `contributte/.github` repository.
 
 #### tests.yml
 
+Tests must run from the minimum supported PHP version (with `--prefer-lowest` flag) up to the latest PHP version.
+
 ```yaml
 name: "Nette Tester"
 
@@ -236,6 +356,12 @@ on:
     - cron: "0 8 * * 1"
 
 jobs:
+  test85:
+    name: "Nette Tester"
+    uses: contributte/.github/.github/workflows/nette-tester.yml@master
+    with:
+      php: "8.5"
+
   test84:
     name: "Nette Tester"
     uses: contributte/.github/.github/workflows/nette-tester.yml@master
@@ -254,8 +380,8 @@ jobs:
     with:
       php: "8.2"
 
-  testlower:
-    name: "Nette Tester"
+  testlowest:
+    name: "Nette Tester Lowest"
     uses: contributte/.github/.github/workflows/nette-tester.yml@master
     with:
       php: "8.2"
@@ -347,8 +473,7 @@ tests/
 │   ├── Unit/           # Unit tests
 │   └── Integration/    # Integration tests
 ├── Fixtures/           # Test fixtures and data
-├── bootstrap.php       # Test bootstrap file
-└── .coveralls.yml      # Coveralls configuration (optional)
+└── bootstrap.php       # Test bootstrap file
 ```
 
 ### Test Bootstrap
@@ -359,11 +484,34 @@ tests/
 require __DIR__ . '/../vendor/autoload.php';
 
 Tester\Environment::setup();
-
-date_default_timezone_set('Europe/Prague');
 ```
 
 ### Writing Tests
+
+Contributte libraries use [Nette Tester](https://tester.nette.org/). There are two approaches to writing tests:
+
+#### PHPT Tests (Preferred)
+
+PHPT tests are simple, self-contained test files. This is the **preferred approach** for most tests.
+
+```php
+<?php declare(strict_types = 1);
+
+use Tester\Assert;
+
+require_once __DIR__ . '/../../bootstrap.php';
+
+// Test code
+$result = someFunction();
+
+Assert::same('expected', $result);
+Assert::true(true);
+Assert::count(3, $array);
+```
+
+#### TestCase Class
+
+Use `TestCase` when you need setup/teardown methods or when grouping related tests makes sense.
 
 ```php
 <?php declare(strict_types = 1);
@@ -377,14 +525,33 @@ require_once __DIR__ . '/../../bootstrap.php';
 
 final class ExampleTest extends TestCase
 {
-    public function testExample(): void
+    private $service;
+
+    protected function setUp(): void
     {
-        Assert::true(true);
+        $this->service = new Service();
+    }
+
+    public function testFeatureA(): void
+    {
+        Assert::same('expected', $this->service->methodA());
+    }
+
+    public function testFeatureB(): void
+    {
+        Assert::true($this->service->methodB());
     }
 }
 
 (new ExampleTest())->run();
 ```
+
+### When to Use Each Approach
+
+| Approach | Use When |
+|----------|----------|
+| **PHPT** (preferred) | Simple tests, single assertions, no shared setup needed |
+| **TestCase** | Multiple related tests sharing setup, need setUp/tearDown lifecycle |
 
 ## Editor Configuration
 
@@ -449,7 +616,6 @@ Documentation is stored in the `.docs` directory:
 ```
 .docs/
 ├── README.md           # Main documentation
-├── index.md            # Index/getting started
 └── assets/             # Images and diagrams
 ```
 
