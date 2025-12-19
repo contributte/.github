@@ -27,7 +27,7 @@ This document describes the standards and conventions for developing Contributte
 - [contributte/doctrine-dbal](https://github.com/contributte/doctrine-dbal)
 - [contributte/doctrine-orm](https://github.com/contributte/doctrine-orm)
 - [contributte/messenger](https://github.com/contributte/messenger)
-- [contributte/nella](https://github.com/contributte/nella) - reference for `.gitignore` structure
+- [contributte/nella](https://github.com/contributte/nella)
 
 ## AI Development
 
@@ -219,29 +219,34 @@ make qa
 The Makefile provides standardized development commands:
 
 ```makefile
-.PHONY: install qa cs csf phpstan tests coverage
-
+.PHONY: install
 install:
 	composer update
 
+.PHONY: qa
 qa: phpstan cs
 
+.PHONY: cs
 cs:
 ifdef GITHUB_ACTION
-	vendor/bin/phpcs --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --tab-width=4 -sp src tests --report=checkstyle | cs2pr
+	vendor/bin/phpcs --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --colors -nsp -q --report=checkstyle src tests | cs2pr
 else
-	vendor/bin/phpcs --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --tab-width=4 -sp src tests
+	vendor/bin/phpcs --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --colors -nsp src tests
 endif
 
+.PHONY: csf
 csf:
-	vendor/bin/phpcbf --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --tab-width=4 -sp src tests
+	vendor/bin/phpcbf --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --colors -nsp src tests
 
+.PHONY: phpstan
 phpstan:
 	vendor/bin/phpstan analyse -c phpstan.neon
 
+.PHONY: tests
 tests:
 	vendor/bin/tester -s -p php --colors 1 -C tests/Cases
 
+.PHONY: coverage
 coverage:
 ifdef GITHUB_ACTION
 	vendor/bin/tester -s -p phpdbg --colors 1 -C --coverage coverage.xml --coverage-src src tests/Cases
@@ -372,7 +377,7 @@ jobs:
     name: "Nette Tester"
     uses: contributte/.github/.github/workflows/nette-tester.yml@master
     with:
-      php: "8.3"
+      php: "8.4"
 
   test82:
     name: "Nette Tester"
@@ -407,7 +412,7 @@ jobs:
     name: "Phpstan"
     uses: contributte/.github/.github/workflows/phpstan.yml@master
     with:
-      php: "8.3"
+      php: "8.4"
 ```
 
 #### codesniffer.yml
@@ -429,7 +434,7 @@ jobs:
     name: "Codesniffer"
     uses: contributte/.github/.github/workflows/codesniffer.yml@master
     with:
-      php: "8.3"
+      php: "8.4"
 ```
 
 #### coverage.yml
@@ -451,7 +456,7 @@ jobs:
     name: "Nette Tester"
     uses: contributte/.github/.github/workflows/nette-tester-coverage-v2.yml@master
     with:
-      php: "8.3"
+      php: "8.4"
     secrets: inherit
 ```
 
