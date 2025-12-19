@@ -221,24 +221,27 @@ Additional directories may be present depending on the skeleton's purpose (e.g.,
 Skeleton projects have extended Makefile with project management tasks:
 
 ```makefile
-.PHONY: project init install setup clean qa cs csf phpstan tests coverage dev build docker-up deploy
-
 #
 # Project
 #
 
+.PHONY: project
 project: install setup
 
+.PHONY: init
 init:
 	cp config/local.neon.dist config/local.neon
 
+.PHONY: install
 install:
 	composer install
 
+.PHONY: setup
 setup:
 	mkdir -p var/tmp var/log
 	chmod -R 0777 var/tmp var/log
 
+.PHONY: clean
 clean:
 	find var/tmp -mindepth 1 ! -name '.gitignore' -type f,d -exec rm -rf {} + 2>/dev/null; true
 	find var/log -mindepth 1 ! -name '.gitignore' -type f,d -exec rm -rf {} + 2>/dev/null; true
@@ -247,24 +250,30 @@ clean:
 # QA
 #
 
+.PHONY: qa
 qa: phpstan cs
 
+.PHONY: cs
 cs:
 ifdef GITHUB_ACTION
-	vendor/bin/phpcs --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --tab-width=4 -sp app tests --report=checkstyle | cs2pr
+	vendor/bin/phpcs --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --colors -nsp -q --report=checkstyle app tests | cs2pr
 else
-	vendor/bin/phpcs --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --tab-width=4 -sp app tests
+	vendor/bin/phpcs --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --colors -nsp app tests
 endif
 
+.PHONY: csf
 csf:
-	vendor/bin/phpcbf --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --tab-width=4 -sp app tests
+	vendor/bin/phpcbf --standard=ruleset.xml --encoding=utf-8 --extensions=php,phpt --colors -nsp app tests
 
+.PHONY: phpstan
 phpstan:
 	vendor/bin/phpstan analyse -c phpstan.neon
 
+.PHONY: tests
 tests:
 	vendor/bin/tester -s -p php --colors 1 -C tests/Cases
 
+.PHONY: coverage
 coverage:
 ifdef GITHUB_ACTION
 	vendor/bin/tester -s -p phpdbg --colors 1 -C --coverage coverage.xml --coverage-src app tests/Cases
@@ -276,6 +285,7 @@ endif
 # Dev
 #
 
+.PHONY: dev
 dev:
 	NETTE_DEBUG=1 php -S 0.0.0.0:8000 -t www
 
@@ -283,6 +293,7 @@ dev:
 # Docker
 #
 
+.PHONY: docker-up
 docker-up:
 	docker compose up -d
 
@@ -290,9 +301,11 @@ docker-up:
 # Deploy
 #
 
+.PHONY: build
 build:
 	# Add build steps here
 
+.PHONY: deploy
 deploy: clean project build clean
 ```
 
