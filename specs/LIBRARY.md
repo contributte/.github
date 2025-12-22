@@ -354,9 +354,10 @@ name: "Nette Tester"
 on:
   pull_request:
   workflow_dispatch:
+
   push:
-    branches:
-      - "**"
+    branches: [ "*" ]
+
   schedule:
     - cron: "0 8 * * 1"
 
@@ -401,11 +402,12 @@ name: "Phpstan"
 on:
   pull_request:
   workflow_dispatch:
+
   push:
-    branches:
-      - "**"
+    branches: ["*"]
+
   schedule:
-    - cron: "0 8 * * 1"
+    - cron: "0 9 * * 1"
 
 jobs:
   phpstan:
@@ -423,11 +425,12 @@ name: "Codesniffer"
 on:
   pull_request:
   workflow_dispatch:
+
   push:
-    branches:
-      - "**"
+    branches: ["*"]
+
   schedule:
-    - cron: "0 8 * * 1"
+    - cron: "0 10 * * 1"
 
 jobs:
   codesniffer:
@@ -445,11 +448,12 @@ name: "Coverage"
 on:
   pull_request:
   workflow_dispatch:
+
   push:
-    branches:
-      - "**"
+    branches: ["*"]
+
   schedule:
-    - cron: "0 8 * * 1"
+    - cron: "0 11 * * 1"
 
 jobs:
   coverage:
