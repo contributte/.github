@@ -174,10 +174,10 @@ make qa
     "php": ">=8.2"
   },
   "require-dev": {
-    "contributte/qa": "^0.4",
-    "contributte/phpstan": "^0.1",
-    "mockery/mockery": "^1.6",
-    "nette/tester": "^2.5"
+    "contributte/qa": "^0.4.0",
+    "contributte/phpstan": "^0.1.0",
+    "mockery/mockery": "^1.6.0",
+    "nette/tester": "^2.5.0"
   },
   "autoload": {
     "psr-4": {
