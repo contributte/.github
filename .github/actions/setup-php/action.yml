@@ -10,7 +10,7 @@ inputs:
   extensions:
     required: false
     type: string
-    default: "json"
+    default: "json, mongodb"
 
   tools:
     required: false
