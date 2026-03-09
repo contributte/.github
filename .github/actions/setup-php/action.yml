@@ -10,7 +10,7 @@ inputs:
   extensions:
     required: false
     type: string
-    default: "json, mongodb"
+    default: "json, amqp, mongodb"
 
   tools:
     required: false
